@@ -1,25 +1,33 @@
-// pages/Login.tsx
-import { Loader2, Lock, Mail } from 'lucide-react';
+// pages/Signup.tsx
+import { Loader2, Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Login() {
+export default function Signup() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     
     try {
-      // Authentication logic
-      console.log('Logging in with:', { email, password });
+      // Registration logic
+      console.log('Signing up with:', { name, email, password });
       await new Promise(resolve => setTimeout(resolve, 1500));
     } catch (err) {
-      setError('Invalid credentials. Please try again.');
+      setError('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -28,9 +36,9 @@ export default function Login() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create your account</h2>
         <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Enter your credentials to access your account
+          Get started with our platform
         </p>
       </div>
       
@@ -44,6 +52,26 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Full name
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <User size={18} className="text-gray-400" />
+            </div>
+            <input
+              id="name"
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email address
@@ -65,14 +93,9 @@ export default function Login() {
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
-              Forgot password?
-            </Link>
-          </div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Password
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Lock size={18} className="text-gray-400" />
@@ -88,17 +111,42 @@ export default function Login() {
               minLength={8}
             />
           </div>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Minimum 8 characters
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Confirm password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock size={18} className="text-gray-400" />
+            </div>
+            <input
+              id="confirm-password"
+              type="password"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={8}
+            />
+          </div>
         </div>
 
         <div className="flex items-center">
           <input
-            id="remember-me"
-            name="remember-me"
+            id="terms"
+            name="terms"
             type="checkbox"
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            required
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-            Remember me
+          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            I agree to the <a href="#" className="text-blue-600 hover:text-blue-500 dark:text-blue-400">Terms of Service</a> and <a href="#" className="text-blue-600 hover:text-blue-500 dark:text-blue-400">Privacy Policy</a>
           </label>
         </div>
 
@@ -110,18 +158,18 @@ export default function Login() {
           {isLoading ? (
             <>
               <Loader2 size={18} className="animate-spin mr-2" />
-              Signing in...
+              Creating account...
             </>
           ) : (
-            'Sign in'
+            'Sign up'
           )}
         </button>
       </form>
 
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Don't have an account?{' '}
-        <Link to="../signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
-          Sign up
+        Already have an account?{' '}
+        <Link to="../login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+          Sign in
         </Link>
       </div>
     </div>

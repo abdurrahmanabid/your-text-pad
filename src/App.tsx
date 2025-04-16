@@ -1,18 +1,33 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import NotFound from './pages/NotFound'
+// App.tsx or your router file
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import AuthLayout from "./components/AuthLayout";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/SignUp";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/auth",
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "signup",
+        element: <Signup />,
+      },
+    ],
+  },
+]);
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
