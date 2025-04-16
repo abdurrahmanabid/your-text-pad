@@ -1,28 +1,28 @@
-import { useEffect, useState } from "react";
-import Ribbon from "../components/Ribbon";
+import { useCallback, useEffect, useState } from 'react';
+import Editor from '../components/Editor';
+import StatusBar from '../components/StatusBar';
+import TabBar from '../components/TabBar';
+import Toolbar from '../components/Toolbar';
 
-interface Tab {
+export interface Tab {
   title: string;
   id: number;
   content: string;
+  fileHandle?: FileSystemFileHandle;
 }
 
-const Home = () => {
+export default function Home() {
   const [tabs, setTabs] = useState<Tab[]>([
     {
-      title: "Untitled 1",
+      title: 'Document 1',
       id: 1,
-      content: "This is the content of Untitled 1",
-    },
-    {
-      title: "Untitled 2",
-      id: 2,
-      content: "This is the content of Untitled 2",
+      content: 'Welcome to your new text editor!\n\nPress Ctrl+S to save this file.',
     },
   ]);
   const [activeTab, setActiveTab] = useState<number>(1);
   const [isEditingTitle, setIsEditingTitle] = useState<number | null>(null);
-  const [newTitle, setNewTitle] = useState<string>("");
+  const [newTitle, setNewTitle] = useState<string>('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Set the first tab as active by default
   useEffect(() => {
@@ -31,9 +31,9 @@ const Home = () => {
     }
   }, [tabs, activeTab]);
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleContentChange = (content: string) => {
     const updatedTabs = tabs.map(tab =>
-      tab.id === activeTab ? { ...tab, content: e.target.value } : tab
+      tab.id === activeTab ? { ...tab, content } : tab
     );
     setTabs(updatedTabs);
   };
@@ -41,9 +41,9 @@ const Home = () => {
   const addNewTab = () => {
     const newId = tabs.length > 0 ? Math.max(...tabs.map(tab => tab.id)) + 1 : 1;
     const newTab = {
-      title: `Untitled ${newId}`,
+      title: `Document ${newId}`,
       id: newId,
-      content: "",
+      content: '',
     };
     setTabs([...tabs, newTab]);
     setActiveTab(newId);
@@ -53,7 +53,6 @@ const Home = () => {
     const newTabs = tabs.filter(tab => tab.id !== id);
     setTabs(newTabs);
     
-    // If we're closing the active tab, switch to another tab
     if (id === activeTab && newTabs.length > 0) {
       setActiveTab(newTabs[0].id);
     }
@@ -72,37 +71,162 @@ const Home = () => {
     setIsEditingTitle(null);
   };
 
-  const activeContent = tabs.find(tab => tab.id === activeTab)?.content || "";
+  const saveCurrentTab = useCallback(async () => {
+    const tab = tabs.find(t => t.id === activeTab);
+    if (!tab) return;
+
+    try {
+      if ('showSaveFilePicker' in window) {
+        await saveWithFileSystemAPI(tab);
+      } else {
+        saveWithDownload(tab);
+      }
+    } catch (error) {
+      console.error('Error saving file:', error);
+    }
+  }, [tabs, activeTab]);
+
+  const saveWithFileSystemAPI = async (tab: Tab) => {
+    try {
+      let fileHandle = tab.fileHandle;
+      
+      if (!fileHandle) {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: `${tab.title}.txt`,
+          types: [{
+            description: 'Text Files',
+            accept: { 'text/plain': ['.txt'] },
+          }],
+        });
+      }
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(tab.content);
+      await writable.close();
+
+      if (!tab.fileHandle) {
+        const updatedTabs = tabs.map(t => 
+          t.id === tab.id ? { ...t, fileHandle, title: fileHandle!.name.replace('.txt', '') } : t
+        );
+        setTabs(updatedTabs);
+      }
+
+      showToast('File saved successfully!');
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      throw error;
+    }
+  };
+
+  const saveWithDownload = (tab: Tab) => {
+    const blob = new Blob([tab.content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${tab.title}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('File downloaded!');
+  };
+
+  const showToast = (message: string) => {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-top toast-center';
+    toast.innerHTML = `
+      <div class="alert alert-success">
+        <span>${message}</span>
+      </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  };
+
+  const openFile = async () => {
+    try {
+      if (!('showOpenFilePicker' in window)) {
+        alert('File System Access API not supported in your browser. Try Chrome or Edge.');
+        return;
+      }
+
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'Text Files',
+          accept: { 'text/plain': ['.txt'] },
+        }],
+        multiple: false,
+      });
+
+      const file = await fileHandle.getFile();
+      const content = await file.text();
+      
+      const newId = tabs.length > 0 ? Math.max(...tabs.map(tab => tab.id)) + 1 : 1;
+      const newTab = {
+        title: file.name.replace('.txt', ''),
+        id: newId,
+        content,
+        fileHandle,
+      };
+
+      setTabs([...tabs, newTab]);
+      setActiveTab(newId);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      console.error('Error opening file:', error);
+    }
+  };
+
+  // Handle Ctrl+S shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveCurrentTab();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saveCurrentTab]);
+
+  const activeTabData = tabs.find(tab => tab.id === activeTab);
 
   return (
-    <div className="flex flex-col h-screen">
-      <Ribbon 
-        tabs={tabs} 
+    <div className={`flex flex-col h-screen ${isDarkMode ? 'dark' : ''}`} data-theme={isDarkMode ? "dark" : "light"}>
+      <Toolbar 
+        isDarkMode={isDarkMode}
+        toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        openFile={openFile}
+        addNewTab={addNewTab}
+        saveCurrentTab={saveCurrentTab}
+      />
+      
+      <TabBar
+        tabs={tabs}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        addNewTab={addNewTab}
-        closeTab={closeTab}
         isEditingTitle={isEditingTitle}
-        startEditingTitle={startEditingTitle}
         newTitle={newTitle}
         setNewTitle={setNewTitle}
+        startEditingTitle={startEditingTitle}
         saveTitle={saveTitle}
+        closeTab={closeTab}
       />
-      
-      <textarea
-        value={activeContent}
+
+      <Editor
+        content={activeTabData?.content || ''}
         onChange={handleContentChange}
-        className="flex-grow outline-none border-none focus:border-none focus:outline-none focus:ring-0 p-4 resize-none w-full bg-gray-50"
-        placeholder="Start typing..."
       />
-      
-      <div className="bg-gray-100 p-2 text-sm text-gray-500">
-        {tabs.find(tab => tab.id === activeTab)?.title} | 
-        Characters: {activeContent.length} | 
-        Words: {activeContent.trim() ? activeContent.trim().split(/\s+/).length : 0}
-      </div>
+
+      <StatusBar
+        fileName={activeTabData?.title || 'Untitled'}
+        isPersisted={!!activeTabData?.fileHandle}
+        characterCount={activeTabData?.content.length || 0}
+        wordCount={activeTabData?.content.trim() ? activeTabData.content.trim().split(/\s+/).length : 0}
+        lineCount={activeTabData?.content.split('\n').length || 0}
+      />
     </div>
   );
-};
-
-export default Home;
+}
