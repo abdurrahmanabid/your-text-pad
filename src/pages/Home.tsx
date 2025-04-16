@@ -22,7 +22,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<number>(1);
   const [isEditingTitle, setIsEditingTitle] = useState<number | null>(null);
   const [newTitle, setNewTitle] = useState<string>('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Set the first tab as active by default
   useEffect(() => {
