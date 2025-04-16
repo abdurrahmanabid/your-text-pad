@@ -2,7 +2,7 @@
 import { Cross, Loader2, Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from './../service/api';
+import { register } from '../service/api';
 
 export default function Signup() {
   const [name, setName] = useState('');

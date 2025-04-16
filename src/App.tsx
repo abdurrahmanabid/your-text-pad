@@ -7,11 +7,11 @@ import Signup from "./pages/SignUp";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/dashboard",
     element: <Home />,
   },
   {
-    path: "/auth",
+    path: "/",
     element: <AuthLayout />,
     children: [
       {

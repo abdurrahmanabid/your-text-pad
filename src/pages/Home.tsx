@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Editor from '../components/Editor';
 import StatusBar from '../components/StatusBar';
 import TabBar from '../components/TabBar';
 import Toolbar from '../components/Toolbar';
+import { getMe, logout } from '../service/api';
 
 export interface Tab {
   title: string;
   id: number;
   content: string;
   fileHandle?: FileSystemFileHandle;
+}
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function Home() {
@@ -23,14 +33,41 @@ export default function Home() {
   const [isEditingTitle, setIsEditingTitle] = useState<number | null>(null);
   const [newTitle, setNewTitle] = useState<string>('');
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Set the first tab as active by default
+  // Check auth status on mount
   useEffect(() => {
-    if (tabs.length > 0 && !tabs.find(tab => tab.id === activeTab)) {
-      setActiveTab(tabs[0].id);
-    }
-  }, [tabs, activeTab]);
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        
+        const userData = await getMe();
+        setUser(userData);
+      } catch (error) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.removeItem('token');
+      setUser(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Tab management functions
   const handleContentChange = (content: string) => {
     const updatedTabs = tabs.map(tab =>
       tab.id === activeTab ? { ...tab, content } : tab
@@ -71,6 +108,7 @@ export default function Home() {
     setIsEditingTitle(null);
   };
 
+  // File operations
   const saveCurrentTab = useCallback(async () => {
     const tab = tabs.find(t => t.id === activeTab);
     if (!tab) return;
@@ -193,6 +231,14 @@ export default function Home() {
 
   const activeTabData = tabs.find(tab => tab.id === activeTab);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-base-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col h-screen ${isDarkMode ? 'dark' : ''}`} data-theme={isDarkMode ? "dark" : "light"}>
       <Toolbar 
@@ -201,6 +247,8 @@ export default function Home() {
         openFile={openFile}
         addNewTab={addNewTab}
         saveCurrentTab={saveCurrentTab}
+        user={user}
+        onLogout={handleLogout}
       />
       
       <TabBar
