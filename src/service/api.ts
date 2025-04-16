@@ -60,7 +60,18 @@ export const login = async (credentials: { email: string; password: string }) =>
   const response = await api.post('/login', credentials);
   return response.data;
 };
+export const saveFileToDB = async (fileData: {
+  title: string;
+  content: string;
+}) => {
+  const response = await api.post('/files', fileData);
+  return response.data;
+};
 
+export const getFiles = async () => {
+  const response = await api.get('/files');
+  return response.data;
+};
 export const logout = async () => {
   const response = await api.post('/logout');
   localStorage.removeItem('token');
