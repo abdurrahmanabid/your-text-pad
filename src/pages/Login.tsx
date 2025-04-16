@@ -1,13 +1,15 @@
 // pages/Login.tsx
 import { Loader2, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { login } from '../service/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,11 +17,10 @@ export default function Login() {
     setError('');
     
     try {
-      // Authentication logic
-      console.log('Logging in with:', { email, password });
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await login({ email, password });
+      navigate('/dashboard'); // Redirect after login
     } catch (err) {
-      setError('Invalid credentials. Please try again.');
+      setError(typeof err === 'string' ? err : 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +45,7 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* ... rest of the login form remains the same ... */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email address
@@ -117,13 +119,6 @@ export default function Login() {
           )}
         </button>
       </form>
-
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Don't have an account?{' '}
-        <Link to="../signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
-          Sign up
-        </Link>
-      </div>
     </div>
   );
 }

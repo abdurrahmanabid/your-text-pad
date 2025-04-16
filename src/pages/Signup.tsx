@@ -1,7 +1,8 @@
 // pages/Signup.tsx
-import { Loader2, Lock, Mail, User } from 'lucide-react';
+import { Cross, Loader2, Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { register } from './../service/api';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -10,12 +11,24 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Client-side validation
+    if (!name || !email || !password || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -23,11 +36,27 @@ export default function Signup() {
     setError('');
     
     try {
-      // Registration logic
-      console.log('Signing up with:', { name, email, password });
-      await new Promise(resolve => setTimeout(resolve, 1500));
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+      // API call to register endpoint
+      const response = await register({ name, email, password });
+      
+      // Store token in localStorage
+      localStorage.setItem('token', response.token);
+      
+      // Redirect to dashboard or home page
+      navigate('/dashboard');
+      
+    } catch (err: any) {
+      // Handle different error cases
+      if (err.response) {
+        // Server responded with error status
+        setError(err.response.data.error || 'Registration failed');
+      } else if (err.request) {
+        // Request was made but no response received
+        setError('Network error. Please try again.');
+      } else {
+        // Other errors
+        setError(err.message || 'An error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -44,14 +73,13 @@ export default function Signup() {
       
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
+          <Cross size={18} className="text-red-500" />
           <span>{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name Field */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Full name
@@ -72,6 +100,7 @@ export default function Signup() {
           </div>
         </div>
 
+        {/* Email Field */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email address
@@ -92,6 +121,7 @@ export default function Signup() {
           </div>
         </div>
 
+        {/* Password Field */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Password
@@ -116,6 +146,7 @@ export default function Signup() {
           </p>
         </div>
 
+        {/* Confirm Password Field */}
         <div>
           <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Confirm password
@@ -137,6 +168,7 @@ export default function Signup() {
           </div>
         </div>
 
+        {/* Terms Checkbox */}
         <div className="flex items-center">
           <input
             id="terms"
@@ -150,9 +182,10 @@ export default function Signup() {
           </label>
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-75"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -166,6 +199,7 @@ export default function Signup() {
         </button>
       </form>
 
+      {/* Login Link */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
         Already have an account?{' '}
         <Link to="../login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
