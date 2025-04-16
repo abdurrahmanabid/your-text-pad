@@ -1,63 +1,75 @@
-import { FilePlus2, X } from "lucide-react";
-import { useState } from "react";
-
-interface Tab {
-  title: string;
-  id: number;
-  content: string;
-}
-
 interface RibbonProps {
   tabs: Tab[];
-  setTabs: (tabs: Tab[]) => void;
+  activeTab: number;
+  setActiveTab: (id: number) => void;
+  addNewTab: () => void;
+  closeTab: (id: number) => void;
+  isEditingTitle: number | null;
+  startEditingTitle: (id: number, title: string) => void;
+  newTitle: string;
+  setNewTitle: (title: string) => void;
+  saveTitle: (id: number) => void;
 }
 
-const Ribbon = ({ tabs, setTabs }: RibbonProps) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
-  const addNew = () => {
-    const newTab = {
-      title: `Untitled ${tabs.length + 1}`,
-      id: Date.now(), // Using timestamp as unique ID
-      content: `This is the content of Untitled ${tabs.length + 1}`,
-    };
-    setTabs([...tabs, newTab]);
-  };
-
-  const removeTab = (id: number) => {
-    const newTabs = tabs.filter(tab => tab.id !== id);
-    setTabs(newTabs);
-  };
-
+const Ribbon = ({
+  tabs,
+  activeTab,
+  setActiveTab,
+  addNewTab,
+  closeTab,
+  isEditingTitle,
+  startEditingTitle,
+  newTitle,
+  setNewTitle,
+  saveTitle,
+}: RibbonProps) => {
   return (
-    <div className="border flex flex-wrap items-center border-gray-300 rounded-md overflow-hidden">
-      {tabs.map((tab, index) => (
+    <div className="flex bg-gray-200 p-1 overflow-x-auto">
+      {tabs.map(tab => (
         <div
           key={tab.id}
-          className="flex items-center gap-2 border-r border-gray-300 px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
-          onMouseEnter={() => setHoveredIndex(index)}
-          onMouseLeave={() => setHoveredIndex(null)}
+          className={`flex items-center mr-1 px-3 py-1 rounded-t-lg cursor-pointer ${
+            activeTab === tab.id ? "bg-white" : "bg-gray-300 hover:bg-gray-100"
+          }`}
         >
-          <span className="text-sm font-medium">{tab.title}</span>
-          <X
-            size={16}
-            className={`cursor-pointer transition-colors ${
-              hoveredIndex === index ? "text-gray-500" : "text-transparent"
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              removeTab(tab.id);
-            }}
-          />
+          {isEditingTitle === tab.id ? (
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onBlur={() => saveTitle(tab.id)}
+              onKeyDown={(e) => e.key === 'Enter' && saveTitle(tab.id)}
+              className="w-32 px-1"
+              autoFocus
+            />
+          ) : (
+            <>
+              <span 
+                onClick={() => setActiveTab(tab.id)}
+                onDoubleClick={() => startEditingTitle(tab.id, tab.title)}
+                className="mr-2"
+              >
+                {tab.title}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeTab(tab.id);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </>
+          )}
         </div>
       ))}
-      <div
-        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
-        onClick={addNew}
+      <button
+        onClick={addNewTab}
+        className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
       >
-        <FilePlus2 size={16} className="text-gray-500" />
-        <span className="text-sm font-medium">New</span>
-      </div>
+        +
+      </button>
     </div>
   );
 };
