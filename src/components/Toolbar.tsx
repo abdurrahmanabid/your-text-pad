@@ -1,5 +1,15 @@
-import { Database, FolderOpen, HardDrive, LogOut, Moon, Plus, Save, Sun, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Database,
+  FolderOpen,
+  HardDrive,
+  LogOut,
+  Moon,
+  Plus,
+  Save,
+  Sun,
+  User as UserIcon,
+} from "lucide-react";
+import { useState } from "react";
 
 interface ToolbarProps {
   isDarkMode: boolean;
@@ -32,12 +42,13 @@ export default function Toolbar({
   return (
     <div className="navbar bg-base-200 border-b border-base-300 px-4">
       {/* Left side - App title */}
-      <div className="flex-1">
-        <span className="text-xl font-semibold">Text Editor</span>
+      <div className="text-2xl font-bold">
+        Text
+        <span className="text-primary dark:text-yellow-500">Pad</span>
       </div>
 
       {/* Right side - Controls */}
-      <div className="flex-none gap-2">
+      <div className="flex">
         {/* User dropdown */}
         {user && (
           <div className="dropdown dropdown-end">
@@ -46,14 +57,8 @@ export default function Toolbar({
               role="button"
               className="btn btn-ghost btn-circle avatar flex items-center justify-center"
             >
-              <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-                {user.name ? (
-                  <span className="text-lg font-medium">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <UserIcon size={18} />
-                )}
+              <div>
+                {user.name ? <UserIcon size={18} /> : <UserIcon size={18} />}
               </div>
             </div>
             <ul
@@ -61,7 +66,7 @@ export default function Toolbar({
               className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
             >
               <li className="menu-title">
-                <span>{user.name || 'User'}</span>
+                <span>{user.name || "User"}</span>
               </li>
               <li>
                 <a className="justify-between">
@@ -86,7 +91,9 @@ export default function Toolbar({
         <button
           className="btn btn-ghost btn-square"
           onClick={toggleDarkMode}
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={
+            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+          }
         >
           {isDarkMode ? (
             <Sun size={20} className="text-warning" />
@@ -104,7 +111,7 @@ export default function Toolbar({
               onClick={() => setShowImportMenu(!showImportMenu)}
             >
               <FolderOpen size={18} className="mr-1" />
-              <span>Open</span>
+              <span className="hidden sm:block">Open</span>
             </button>
             {showImportMenu && (
               <ul
@@ -112,19 +119,23 @@ export default function Toolbar({
                 className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-2"
               >
                 <li>
-                  <button onClick={() => {
-                    importFromLocal();
-                    setShowImportMenu(false);
-                  }}>
+                  <button
+                    onClick={() => {
+                      importFromLocal();
+                      setShowImportMenu(false);
+                    }}
+                  >
                     <HardDrive size={16} className="mr-2" />
                     From Local File
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => {
-                    importFromDB();
-                    setShowImportMenu(false);
-                  }}>
+                  <button
+                    onClick={() => {
+                      importFromDB();
+                      setShowImportMenu(false);
+                    }}
+                  >
                     <Database size={16} className="mr-2" />
                     From Database
                   </button>
@@ -134,48 +145,17 @@ export default function Toolbar({
           </div>
 
           {/* New document */}
-          <button
-            className="btn btn-primary"
-            onClick={addNewTab}
-          >
+          <button className="btn btn-primary" onClick={addNewTab}>
             <Plus size={18} className="mr-1" />
-            <span>New</span>
+            <span className="hidden sm:block">New</span>
           </button>
 
           {/* Save dropdown */}
           <div className="dropdown dropdown-end">
-            <button
-              className="btn btn-accent"
-              onClick={() => setShowSaveMenu(!showSaveMenu)}
-            >
+            <button className="btn btn-accent" onClick={() => saveCurrentTab()}>
               <Save size={18} className="mr-1" />
-              <span>Save</span>
+              <span className="hidden sm:block">Save</span>
             </button>
-            {showSaveMenu && (
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-2"
-              >
-                <li>
-                  <button onClick={() => {
-                    saveCurrentTab();
-                    setShowSaveMenu(false);
-                  }}>
-                    <HardDrive size={16} className="mr-2" />
-                    To Local File
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => {
-                    saveCurrentTab();
-                    setShowSaveMenu(false);
-                  }}>
-                    <Database size={16} className="mr-2" />
-                    To Database
-                  </button>
-                </li>
-              </ul>
-            )}
           </div>
         </div>
       </div>
