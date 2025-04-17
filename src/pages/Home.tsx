@@ -180,9 +180,9 @@ export default function Home() {
   const saveWithFileSystemAPI = async (tab: Tab) => {
     try {
       let fileHandle = tab.fileHandle;
-
+  
       if (!fileHandle) {
-        fileHandle = await window.showSaveFilePicker({
+        fileHandle = await (window as any).showSaveFilePicker({
           suggestedName: `${tab.title}.txt`,
           types: [
             {
@@ -192,11 +192,13 @@ export default function Home() {
           ],
         });
       }
-
+  
+      if (!fileHandle) throw new Error("No file handle available.");
+  
       const writable = await fileHandle.createWritable();
       await writable.write(tab.content);
       await writable.close();
-
+  
       if (!tab.fileHandle) {
         const updatedTabs = tabs.map((t) =>
           t.id === tab.id
@@ -205,13 +207,14 @@ export default function Home() {
         );
         setTabs(updatedTabs);
       }
-
+  
       showToast("File saved successfully!");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       throw error;
     }
   };
+  
 
   const saveWithDownload = (tab: Tab) => {
     const blob = new Blob([tab.content], { type: "text/plain" });
@@ -229,14 +232,14 @@ export default function Home() {
 
   const importFromLocal = async () => {
     try {
-      if (!("showOpenFilePicker" in window)) {
+      if (!(window as any).showOpenFilePicker) {
         alert(
           "File System Access API not supported in your browser. Try Chrome or Edge."
         );
         return;
       }
-
-      const [fileHandle] = await window.showOpenFilePicker({
+  
+      const [fileHandle] = await (window as any).showOpenFilePicker({
         types: [
           {
             description: "Text Files",
@@ -245,19 +248,20 @@ export default function Home() {
         ],
         multiple: false,
       });
-
+  
       const file = await fileHandle.getFile();
       const content = await file.text();
-
+  
       const newId =
         tabs.length > 0 ? Math.max(...tabs.map((tab) => tab.id)) + 1 : 1;
+  
       const newTab = {
         title: file.name.replace(".txt", ""),
         id: newId,
         content,
         fileHandle,
       };
-
+  
       setTabs([...tabs, newTab]);
       setActiveTab(newId);
     } catch (error) {
@@ -265,6 +269,7 @@ export default function Home() {
       console.error("Error opening file:", error);
     }
   };
+  
 
   const importFromDB = async () => {
     try {
@@ -443,7 +448,7 @@ export default function Home() {
         importFromDB={importFromDB}
         addNewTab={addNewTab}
         saveCurrentTab={saveCurrentTab}
-        user={user}
+        user={user ?? undefined}
         onLogout={handleLogout}
         openFileStore={handleOpenFileStore}
       />
