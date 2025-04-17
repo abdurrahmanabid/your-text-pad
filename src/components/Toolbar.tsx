@@ -40,7 +40,7 @@ export default function Toolbar({
   const [showSaveMenu, setShowSaveMenu] = useState(false);
 
   return (
-    <div className="navbar bg-base-200 border-b border-base-300 px-4">
+    <div className="navbar bg-base-200 border-b border-base-300 px-4 flex justify-between">
       {/* Left side - App title */}
       <div className="text-2xl font-bold">
         Text
