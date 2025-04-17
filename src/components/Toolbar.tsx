@@ -33,7 +33,6 @@ export default function Toolbar({
   isDarkMode,
   toggleDarkMode,
   importFromLocal,
-  importFromDB,
   addNewTab,
   saveCurrentTab,
   user,
@@ -41,7 +40,6 @@ export default function Toolbar({
   openFileStore,
 }: ToolbarProps) {
   const [showImportDropdown, setShowImportDropdown] = useState(false);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const navigate = useNavigate();
 
   return (
