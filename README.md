@@ -155,7 +155,7 @@ Abdur Rahman - abdurrahmanabid33@gmail.com
 
 Project Link: [https://github.com/abdurrahmanabid/your-text-pad](https://github.com/abdurrahmanabid/your-text-pad)
 
-Live Link: [https://github.com/yourusername/text-editor](https://github.com/abdurrahmanabid/your-text-pad)
+Live Link: [https://yourtextpad.vercel.app/](https://yourtextpad.vercel.app/)
 ### Key Sections Included:
 
 1. **Project Overview**: Brief description and screenshot

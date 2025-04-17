@@ -1,6 +1,6 @@
-import { Download, DownloadCloud } from "lucide-react";
+import { Download, DownloadCloud, Info, User } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Editor from "../components/Editor";
 import FileStoreModal from "../components/FileStoreModal";
 import StatusBar from "../components/StatusBar";
@@ -180,7 +180,7 @@ export default function Home() {
   const saveWithFileSystemAPI = async (tab: Tab) => {
     try {
       let fileHandle = tab.fileHandle;
-  
+
       if (!fileHandle) {
         fileHandle = await (window as any).showSaveFilePicker({
           suggestedName: `${tab.title}.txt`,
@@ -192,13 +192,13 @@ export default function Home() {
           ],
         });
       }
-  
+
       if (!fileHandle) throw new Error("No file handle available.");
-  
+
       const writable = await fileHandle.createWritable();
       await writable.write(tab.content);
       await writable.close();
-  
+
       if (!tab.fileHandle) {
         const updatedTabs = tabs.map((t) =>
           t.id === tab.id
@@ -207,14 +207,13 @@ export default function Home() {
         );
         setTabs(updatedTabs);
       }
-  
+
       showToast("File saved successfully!");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       throw error;
     }
   };
-  
 
   const saveWithDownload = (tab: Tab) => {
     const blob = new Blob([tab.content], { type: "text/plain" });
@@ -238,7 +237,7 @@ export default function Home() {
         );
         return;
       }
-  
+
       const [fileHandle] = await (window as any).showOpenFilePicker({
         types: [
           {
@@ -248,20 +247,20 @@ export default function Home() {
         ],
         multiple: false,
       });
-  
+
       const file = await fileHandle.getFile();
       const content = await file.text();
-  
+
       const newId =
         tabs.length > 0 ? Math.max(...tabs.map((tab) => tab.id)) + 1 : 1;
-  
+
       const newTab = {
         title: file.name.replace(".txt", ""),
         id: newId,
         content,
         fileHandle,
       };
-  
+
       setTabs([...tabs, newTab]);
       setActiveTab(newId);
     } catch (error) {
@@ -269,7 +268,6 @@ export default function Home() {
       console.error("Error opening file:", error);
     }
   };
-  
 
   const importFromDB = async () => {
     try {
@@ -489,6 +487,12 @@ export default function Home() {
           onClose={() => setShowFileStore(false)}
         />
       )}
+      <Link
+        to="/about"
+        className="fixed bottom-10 right-10 bg-base-200 hover:bg-base-300 text-base-content p-3 rounded-full shadow-lg flex items-center justify-center transition-all duration-200"
+      >
+        <Info className="w-5 h-5" />
+      </Link>
     </div>
   );
 }
