@@ -43,7 +43,7 @@ export default function Signup() {
       localStorage.setItem('token', response.token);
       
       // Redirect to dashboard or home page
-      navigate('/dashboard');
+      navigate('/');
       
     } catch (err: any) {
       // Handle different error cases

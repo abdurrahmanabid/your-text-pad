@@ -2,14 +2,16 @@ import {
   Database,
   FolderOpen,
   HardDrive,
-  LogOut,
+  LogIn,
+  LogOutIcon,
   Moon,
   Plus,
   Save,
   Sun,
-  User as UserIcon,
+  User
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ToolbarProps {
   isDarkMode: boolean;
@@ -24,6 +26,7 @@ interface ToolbarProps {
     email: string;
   };
   onLogout: () => void;
+  openFileStore: () => void;
 }
 
 export default function Toolbar({
@@ -35,58 +38,23 @@ export default function Toolbar({
   saveCurrentTab,
   user,
   onLogout,
+  openFileStore,
 }: ToolbarProps) {
-  const [showImportMenu, setShowImportMenu] = useState(false);
-  const [showSaveMenu, setShowSaveMenu] = useState(false);
+  const [showImportDropdown, setShowImportDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div className="navbar bg-base-200 border-b border-base-300 px-4 flex justify-between">
+    <div className="navbar bg-base-200 border-b border-base-300 px-4">
       {/* Left side - App title */}
-      <div className="text-2xl font-bold">
-        Text
-        <span className="text-primary dark:text-yellow-500">Pad</span>
+      <div className="flex-1">
+        <span className="text-xl font-bold">
+          Text<span className="text-primary">Pad</span>
+        </span>
       </div>
 
       {/* Right side - Controls */}
-      <div className="flex">
-        {/* User dropdown */}
-        {user && (
-          <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar flex items-center justify-center"
-            >
-              <div>
-                {user.name ? <UserIcon size={18} /> : <UserIcon size={18} />}
-              </div>
-            </div>
-            <ul
-              tabIndex={0}
-              className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
-            >
-              <li className="menu-title">
-                <span>{user.name || "User"}</span>
-              </li>
-              <li>
-                <a className="justify-between">
-                  Profile
-                  <span className="badge badge-primary">New</span>
-                </a>
-              </li>
-              <li>
-                <a>Settings</a>
-              </li>
-              <li>
-                <button onClick={onLogout} className="text-error">
-                  <LogOut size={16} className="mr-2" />
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
-
+      <div className="flex gap-2">
         {/* Dark mode toggle */}
         <button
           className="btn btn-ghost btn-square"
@@ -94,71 +62,123 @@ export default function Toolbar({
           aria-label={
             isDarkMode ? "Switch to light mode" : "Switch to dark mode"
           }
+          data-tip={isDarkMode ? "Light mode" : "Dark mode"}
         >
           {isDarkMode ? (
-            <Sun size={20} className="text-warning" />
+            <Sun size={20} className="text-yellow-400" />
           ) : (
             <Moon size={20} />
           )}
         </button>
 
         {/* File operations */}
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           {/* Import dropdown */}
           <div className="dropdown dropdown-end">
             <button
-              className="btn btn-primary"
-              onClick={() => setShowImportMenu(!showImportMenu)}
+              className="btn btn-primary btn-sm md:btn-md"
+              onClick={() => setShowImportDropdown(!showImportDropdown)}
             >
               <FolderOpen size={18} className="mr-1" />
-              <span className="hidden sm:block">Open</span>
+              <span className="hidden sm:inline">Open</span>
             </button>
-            {showImportMenu && (
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-2"
-              >
-                <li>
-                  <button
-                    onClick={() => {
-                      importFromLocal();
-                      setShowImportMenu(false);
-                    }}
-                  >
-                    <HardDrive size={16} className="mr-2" />
-                    From Local File
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      importFromDB();
-                      setShowImportMenu(false);
-                    }}
-                  >
-                    <Database size={16} className="mr-2" />
-                    From Database
-                  </button>
-                </li>
-              </ul>
-            )}
+            <ul
+              tabIndex={0}
+              className={`dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1 ${
+                showImportDropdown ? "" : "hidden"
+              }`}
+              onMouseLeave={() => setShowImportDropdown(false)}
+            >
+              <li>
+                <button
+                  onClick={() => {
+                    importFromLocal();
+                    setShowImportDropdown(false);
+                  }}
+                  className="flex items-center"
+                >
+                  <HardDrive size={16} className="mr-2" />
+                  From Local File
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    openFileStore();
+                    setShowImportDropdown(false);
+                  }}
+                  className="flex items-center"
+                >
+                  <Database size={16} className="mr-2" />
+                  From Database
+                </button>
+              </li>
+            </ul>
           </div>
 
           {/* New document */}
-          <button className="btn btn-primary" onClick={addNewTab}>
+          <button
+            className="btn btn-primary btn-sm md:btn-md"
+            onClick={addNewTab}
+            data-tip="New document"
+          >
             <Plus size={18} className="mr-1" />
-            <span className="hidden sm:block">New</span>
+            <span className="hidden sm:inline">New</span>
           </button>
 
-          {/* Save dropdown */}
-          <div className="dropdown dropdown-end">
-            <button className="btn btn-accent" onClick={() => saveCurrentTab()}>
-              <Save size={18} className="mr-1" />
-              <span className="hidden sm:block">Save</span>
-            </button>
-          </div>
+          {/* Save button */}
+          <button
+            className="btn btn-accent btn-sm md:btn-md"
+            onClick={saveCurrentTab}
+            data-tip="Save (Ctrl+S)"
+          >
+            <Save size={18} className="mr-1" />
+            <span className="hidden sm:inline">Save</span>
+          </button>
         </div>
+
+        {/* User controls */}
       </div>
+      {user ? (
+        <div className="dropdown dropdown-end">
+          <button
+            className="btn"
+            onClick={() => setShowImportDropdown(!showImportDropdown)}
+          >
+            <User size={18} className="mr-1" />
+          </button>
+          <ul
+            tabIndex={0}
+            className={`dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1 ${
+              showImportDropdown ? "" : "hidden"
+            }`}
+            onMouseLeave={() => setShowImportDropdown(false)}
+          >
+            <li>
+              <button
+                className="flex items-center"
+              >
+                <User size={16} className="mr-2" />
+                Profile
+              </button>
+            </li>
+            <li>
+              <button onClick={onLogout} className="flex items-center text-red-700">
+                <LogOutIcon size={16} className="mr-2" />
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
+      ) : (
+        <button
+          className="btn btn-ghost"
+          onClick={() => navigate("/login")}
+          data-tip="Login"
+        >
+          <LogIn size={18} />
+        </button>
+      )}
     </div>
   );
 }

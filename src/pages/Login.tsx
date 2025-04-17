@@ -20,7 +20,7 @@ export default function Login() {
       const response = await login({ email, password });
       // Store token in localStorage
       localStorage.setItem("token", response.token);
-      navigate("/dashboard"); // Redirect after login
+      navigate("/"); // Redirect after login
     } catch (err) {
       setError(
         typeof err === "string" ? err : "Login failed. Please try again."
@@ -145,6 +145,17 @@ export default function Login() {
             "Sign in"
           )}
         </button>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <Link
+            to="/signup"
+            className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-bold"
+          >
+            <span className="text-gray-400 font-normal">
+              Don't have an account?
+            </span>{" "}
+            Sign up
+          </Link>
+        </p>
       </form>
     </div>
   );

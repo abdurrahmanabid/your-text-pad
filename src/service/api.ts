@@ -72,6 +72,16 @@ export const getFiles = async () => {
   const response = await api.get('/files');
   return response.data;
 };
+// Add these to your existing API functions
+export const getStoredFiles = async () => {
+  const response = await api.get('/files');
+  return response.data;
+};
+
+export const deleteStoredFile = async (fileId: string) => {
+  const response = await api.delete(`/files/${fileId}`);
+  return response.data;
+};
 export const logout = async () => {
   const response = await api.post('/logout');
   localStorage.removeItem('token');
