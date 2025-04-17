@@ -7,7 +7,7 @@ export default function AboutPage() {
       <div className="text-center mb-8">
         <div className="avatar mb-4">
           <div className="w-24 rounded-full overflow-hidden ring ring-primary ring-offset-base-100 ring-offset-2 transform transition-transform duration-300 hover:scale-110 animate-fadeIn">
-            <img src="/../src/assets/pp.png" alt="Abdur Rahman Abid" />
+            <img src="./../src/assets/pp.png" alt="Abdur Rahman Abid" />
           </div>
         </div>
         <h1 className="text-4xl font-bold mb-2">Abdur Rahman Abid </h1>
