@@ -10,7 +10,7 @@ export default function AboutPage() {
             <img src="/../src/assets/pp.png" alt="Abdur Rahman Abid" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold mb-2">Abdur Rahman Abid</h1>
+        <h1 className="text-4xl font-bold mb-2">Abdur Rahman Abid </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300">
           Full Stack Developer
         </p>
